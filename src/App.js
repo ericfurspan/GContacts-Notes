@@ -63,7 +63,8 @@ class App extends Component {
         })
         .catch(e => {
           // @TODO: if unauthorized 401, try this.oAuthSignIn()
-          console.error(e)
+          console.error(e);
+          this.oAuthSignIn();
         })
       } else {
         this.oAuthSignIn();
@@ -75,7 +76,7 @@ class App extends Component {
 
     // Google's OAuth 2.0 endpoint for requesting an access token
     const oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
-    const redirectUri = 'http://localhost:3000/';
+    const redirectUri = window.location.href;
     const clientId = '266480485966-fnnbddkf1iivs1b1b2vlkv4mum63qbsv.apps.googleusercontent.com';
     const scope = 'https://www.googleapis.com/auth/contacts.readonly';
 
