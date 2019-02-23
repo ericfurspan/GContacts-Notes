@@ -76,7 +76,7 @@ class App extends Component {
     // Google's OAuth 2.0 endpoint for requesting an access token
     const oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
     const redirectUri = window.location.href;
-    const clientId = '266480485966-fnnbddkf1iivs1b1b2vlkv4mum63qbsv.apps.googleusercontent.com';
+    const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
     const scope = 'https://www.googleapis.com/auth/contacts.readonly';
 
     // Create <form> element to submit parameters to OAuth 2.0 endpoint.
