@@ -38,7 +38,6 @@ class App extends Component {
 
   logout = () => {
     localStorage.clear();
-    // window.history.pushState({}, document.title, "/");
     window.location.assign('/');
   }
 
@@ -62,7 +61,7 @@ class App extends Component {
           }
         })
         .catch(e => {
-          // @TODO: if unauthorized 401, try this.oAuthSignIn()
+          // @TODO: if unauthorized 401, handle properly
           console.error(e);
           this.oAuthSignIn();
         })
@@ -109,7 +108,6 @@ class App extends Component {
   }
 
   render() {
-    console.log(this.state)
     if(this.state.loading) {
       return (
         <div className="App App-wrapper">
@@ -128,7 +126,7 @@ class App extends Component {
           <div>
             <img src={logo} className="App-logo" alt="logo" /><br/><br/>
             <h5>Welcome to GContact Notes</h5>
-            <Button onClick={() => this.getContacts()} color='primary' variant='outlined' size='large'>
+            <Button onClick={() => this.getContacts()} color='primary' variant='contained' size='large'>
               Get Started
             </Button>
           </div>

@@ -7,7 +7,9 @@ import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import ContactMail from '@material-ui/icons/ContactMailSharp';
-import NoteIcon from '@material-ui/icons/NoteAddOutlined';
+import AssignmentIcon from '@material-ui/icons/AssignmentSharp';
+import AddNoteIcon from '@material-ui/icons/NoteAddSharp';
+import DeleteIcon from '@material-ui/icons/DeleteSharp';
 import CommentIcon from '@material-ui/icons/Comment';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
@@ -18,7 +20,6 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Dialog from '@material-ui/core/Dialog'
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import TextField from '@material-ui/core/TextField';
 
 const styles = theme => ({
@@ -29,6 +30,9 @@ const styles = theme => ({
   title: {
 		margin: `${theme.spacing.unit * 4}px 0 ${theme.spacing.unit * 2}px`,
 		color: '#fff'
+	},
+	buttonIcon: {
+		marginRight: theme.spacing.unit,
 	}
 })
 
@@ -90,14 +94,33 @@ export class Contacts extends React.Component {
 		}
 	}
 
+	// removes note from localstorage and state via note index
+	handleRemoveNote = (noteIndex) => {
+		const contactId = this.state.selectedContact.id.$t;
+		let previousNotes = JSON.parse(localStorage.getItem( contactId ) );
+		let updatedNotes = previousNotes.filter(e => e.index !== noteIndex);
+
+		localStorage.setItem(contactId, JSON.stringify(updatedNotes));
+		
+		this.setState((prevState) => {
+			return { 
+				selectedContact: {
+					...prevState.selectedContact,
+					notes: updatedNotes
+				}
+			};
+		});
+	}
+
 	// when creating new note, get any existing notes and append new note
 	// then update localstorage with updates notes
-	addNoteToLocalStorage = (newNote) => {
+	addNoteToLocalStorage = (noteText) => {
 		let updatedNotes = [];
 
 		const contactId = this.state.selectedContact.id.$t;
-
 		let previousNotes = JSON.parse(localStorage.getItem( contactId ) );
+		let notesLength = previousNotes ? previousNotes.length : 0;
+		const newNote = { index: notesLength, val: noteText };
 
 		if(previousNotes) {
 			updatedNotes = [...previousNotes, newNote];
@@ -123,26 +146,26 @@ export class Contacts extends React.Component {
 					maxWidth='sm'
 				>
 					<DialogTitle>{`Notes for ${this.state.selectedContact.title.$t}`}</DialogTitle>
-					{this.state.selectedContact.notes && this.state.selectedContact.notes.map((note, i) => (							
-						<ListItem key={i} >
+					{this.state.selectedContact.notes && this.state.selectedContact.notes.map(note => (							
+						<ListItem key={note.index} >
 							<ListItemAvatar>
 								<Avatar>
 									<CommentIcon />
 								</Avatar>
 							</ListItemAvatar>
-							<ListItemText primary={note}/>
+							<ListItemText primary={note.val}/>
+									<IconButton onClick={() => this.handleRemoveNote(note.index)}>
+										<DeleteIcon color='secondary' />
+									</IconButton>
 						</ListItem>
 					))}
 					<br/><br/>
 					<DialogContent>
-						<DialogContentText>
-							Enter a note for this contact
-						</DialogContentText>
 						<TextField
 							autoFocus
 							margin="dense"
 							id="name"
-							label="Add Note"
+							label="New Note"														
 							type="text"
 							fullWidth
 							inputRef={val => this.noteRef = val}
@@ -150,11 +173,12 @@ export class Contacts extends React.Component {
 
 					</DialogContent>	
 					<DialogActions>
-						<Button onClick={this.handleCloseDialog}>
+						<Button onClick={this.handleCloseDialog} color='primary'>
 							Cancel
 						</Button>
-						<Button onClick={this.handleNewNote}>
-							Create Note
+						<Button onClick={this.handleNewNote} color='primary'>
+							<AddNoteIcon className={classes.buttonIcon}/>						
+							Create Note					
 						</Button>
 					</DialogActions>											
 				</Dialog>
@@ -182,7 +206,7 @@ export class Contacts extends React.Component {
 									/>
 									<ListItemSecondaryAction>
 										<IconButton onClick={() => this.handleOpenDialog(contact)}>
-											<NoteIcon />
+											<AssignmentIcon />
 										</IconButton>
 									</ListItemSecondaryAction>
 								</ListItem>
