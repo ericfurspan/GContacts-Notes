@@ -126,6 +126,7 @@ class App extends Component {
           <div>
             <img src={logo} className="App-logo" alt="logo" /><br/><br/>
             <h5>Welcome to GContact Notes</h5>
+            <p className="App-subtitle">Connect with your Google Account and save notes to Contacts</p>
             <Button onClick={() => this.getContacts()} color='primary' variant='contained' size='large'>
               Get Started
             </Button>
