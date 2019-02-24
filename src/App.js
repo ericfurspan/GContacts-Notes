@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Contacts from './Contacts';
 import logo from './gmail.svg';
 import Button from '@material-ui/core/Button';
 import './App.css';
 
-class App extends Component {
+class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -13,13 +13,17 @@ class App extends Component {
       title: null,
       loading: false
     }
+    this.handleRedirect = this.handleRedirect.bind(this);
+    this.logout = this.logout.bind(this);
+    this.getContacts = this.getContacts.bind(this);
+    this.oAuthSignIn = this.oAuthSignIn.bind(this);
   }
   componentDidMount() {
     this.handleRedirect();
   }
 
   // handles google auth redirect by pulling URI params and adding to localstorage
-  handleRedirect = () => {
+  handleRedirect() {
     let paramString = window.location.hash.substring(1);
     const urlParams = new URLSearchParams(paramString);
 
@@ -36,20 +40,20 @@ class App extends Component {
     }
   }
 
-  logout = () => {
+  logout() {
     localStorage.clear();
     window.location.assign('/');
   }
 
-  getContacts = () => {
+  getContacts() {
     this.setState({loading: true})
 
     // If there's an access token, try an API request.
     // Otherwise, start OAuth 2.0 flow.
-      let params = JSON.parse(localStorage.getItem('googleOAuth2'));
-      if (params && params['access_token']) {
-        const authUrl = `https://www.google.com/m8/feeds/contacts/default/full?access_token=${params['access_token']}&max-results=10000&alt=json`
-        fetch(authUrl)
+    let params = JSON.parse(localStorage.getItem('googleOAuth2'));
+    if (params && params['access_token']) {
+      const authUrl = `https://www.google.com/m8/feeds/contacts/default/full?access_token=${params['access_token']}&max-results=10000&alt=json`
+      fetch(authUrl)
         .then(res => res.json())
         .then(json => {
           // clean data, remove any contact entries without title.$t
@@ -65,12 +69,12 @@ class App extends Component {
           console.error(e);
           this.oAuthSignIn();
         })
-      } else {
-        this.oAuthSignIn();
-      }
+    } else {
+      this.oAuthSignIn();
+    }
   }
 
-  oAuthSignIn = () => {
+  oAuthSignIn() {
     // see https://developers.google.com/identity/protocols/OAuth2UserAgent#redirecting
 
     // Google's OAuth 2.0 endpoint for requesting an access token
@@ -81,17 +85,17 @@ class App extends Component {
 
     // Create <form> element to submit parameters to OAuth 2.0 endpoint.
     let form = document.createElement('form');
-    
+
     form.setAttribute('method', 'GET'); // Send as a GET request.
     form.setAttribute('action', oauth2Endpoint);
 
     // Parameters to pass to OAuth 2.0 endpoint.
     const params = {'client_id': clientId,
-                  'redirect_uri': redirectUri,
-                  'scope': scope,
-                  'response_type': 'token',
-                  'include_granted_scopes': 'true',
-                  'state': 'try_sample_request'};
+      'redirect_uri': redirectUri,
+      'scope': scope,
+      'response_type': 'token',
+      'include_granted_scopes': 'true',
+      'state': 'try_sample_request'};
 
     // Add form parameters as hidden input values.
     for (let p in params) {
@@ -117,13 +121,13 @@ class App extends Component {
     }
     return (
       <div className="App App-wrapper">
-      
+
         {this.state.contacts ? (
-          <Contacts 
+          <Contacts
             data={this.state}
             logout={this.logout}
           />
-        ) : 
+        ) :
           <div>
             <img src={logo} className="App-logo" alt="logo" /><br/><br/>
             <h5>Welcome to GContact Notes</h5>
