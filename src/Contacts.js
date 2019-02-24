@@ -6,23 +6,24 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
-import ContactMail from '@material-ui/icons/ContactMailSharp';
-import AssignmentIcon from '@material-ui/icons/AssignmentSharp';
 import AddNoteIcon from '@material-ui/icons/NoteAddSharp';
 import DeleteIcon from '@material-ui/icons/DeleteSharp';
 import CommentIcon from '@material-ui/icons/Comment';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Dialog from '@material-ui/core/Dialog'
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
 import TextField from '@material-ui/core/TextField';
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 const styles = theme => ({
+	root: {
+		flexGrow: 1,
+		justifyContent: 'center'
+  },
   demo: {
 		backgroundColor: theme.palette.background.paper,
 		borderRadius: '4px'
@@ -38,35 +39,33 @@ const styles = theme => ({
 
 export class Contacts extends React.Component {
 	constructor(props) {
-    super(props);
-		this.noteRef = React.createRef();
+		super(props);
 		this.state = {
-			open: false,
 			selectedContact: null,
+			noteText: ''
 		}
   }
-	
-	// closes notes dialog
-  handleCloseDialog = () => {
-    this.setState({ 
-			selectedContact: null,
-			open: false
-		});
-  };
 	
 	// gets any existing notes for contact from localstorage
 	// updates Contact object with notes
 	// updates local state
-	// opens notes dialog
-	handleOpenDialog = (contact) => {
-		let contactNotes = this.getNotesFromLocalStorage(contact.id.$t);
+	// opens contact notes notes 
+	handleSelectContact = (contact) => {
+		// handle closing expansion panel
+		if(this.state.selectedContact && this.state.selectedContact.id.$t === contact.id.$t) {
+			return this.setState({
+				selectedContact: null
+			});
+		} else {
+			let contactNotes = this.getNotesFromLocalStorage(contact.id.$t);
 
-		contact['notes'] = contactNotes;
-
-    this.setState({
-			open: true,
-			selectedContact: contact
-    });
+			contact['notes'] = contactNotes;
+	
+			this.setState({
+				selectedContact: contact,
+				noteText: ''
+			});
+		}
   };
 
 	// gets notes from localstorage for given contactId
@@ -78,7 +77,8 @@ export class Contacts extends React.Component {
 	// adds new note to existing notes
 	// updates state
 	handleNewNote = () => {
-		const newNote = this.noteRef.value;
+		const newNote = this.state.noteText;
+
 		if(newNote.length > 0) {
 			let updatedNotes = this.addNoteToLocalStorage(newNote);
 
@@ -87,10 +87,10 @@ export class Contacts extends React.Component {
 					selectedContact: {
 						...prevState.selectedContact,
 						notes: updatedNotes
-					}
+					},
+					noteText: ''
 				};
 			});
-			this.noteRef.value = '';
 		}
 	}
 
@@ -132,90 +132,98 @@ export class Contacts extends React.Component {
 		return updatedNotes;
 	}
 
-  render() {
-		const { classes, data, logout } = this.props;
-
-		// if a contact is selected, render the dialog
-		let notesDialog;
-		if(this.state.selectedContact) {
-			notesDialog = 
-				<Dialog 
-					onClose={this.handleCloseDialog}
-					open={this.state.open}
-					fullWidth={true}
-					maxWidth='sm'
-				>
-					<DialogTitle>{`Notes for ${this.state.selectedContact.title.$t}`}</DialogTitle>
-					{this.state.selectedContact.notes && this.state.selectedContact.notes.map(note => (							
-						<ListItem key={note.index} >
+	renderSelectedContactNotes = () => {
+		if(this.state.selectedContact && this.state.selectedContact.notes) {
+			return (
+				<List>
+					{this.state.selectedContact.notes.map(note => (											
+						<ListItem key={note.index}>
 							<ListItemAvatar>
 								<Avatar>
 									<CommentIcon />
 								</Avatar>
 							</ListItemAvatar>
-							<ListItemText primary={note.val}/>
-									<IconButton onClick={() => this.handleRemoveNote(note.index)}>
-										<DeleteIcon color='secondary' />
-									</IconButton>
+							<ListItemText
+								disableTypography
+								secondary={
+									<div>
+										{note.val.split("\n").map((i, key) => {
+											return <Typography key={key} color="primary" variant="headline">{i}</Typography>;
+										})}
+									</div>
+								}
+							/>
+							<IconButton onClick={() => this.handleRemoveNote(note.index)}>
+								<DeleteIcon color='secondary' />
+							</IconButton>
 						</ListItem>
 					))}
-					<br/><br/>
-					<DialogContent>
-						<TextField
-							autoFocus
-							margin="dense"
-							id="name"
-							label="New Note"														
-							type="text"
-							fullWidth
-							inputRef={val => this.noteRef = val}
-						/>
-
-					</DialogContent>	
-					<DialogActions>
-						<Button onClick={this.handleCloseDialog} color='primary'>
-							Cancel
-						</Button>
-						<Button onClick={this.handleNewNote} color='primary'>
-							<AddNoteIcon className={classes.buttonIcon}/>						
-							Create Note					
-						</Button>
-					</DialogActions>											
-				</Dialog>
+				</List>
+			)
 		}
+	}
+
+  render() {
+		const { classes, data, logout } = this.props;
+		const selectedContactId = this.state.selectedContact ? this.state.selectedContact.id.$t : null;
+
     return (
-        <Grid item xs={12}>
+			<Grid container className={classes.root}>
+        <Grid item xs={12} sm={6} >
 					<Typography variant="h6" className={classes.title}>
 						{data.title.$t}
 					</Typography>
-					<Button onClick={() => logout()} color='secondary'>
+					<Button color='secondary' onClick={logout}>
 						Logout
 					</Button>
 					<br/>
 					<div className={classes.demo}>
 						<List>
 							{data.contacts && data.contacts.map(contact => (
-								<ListItem key={contact.id.$t} divider>
-									<ListItemAvatar>
-											<Avatar>
-												<ContactMail />
-											</Avatar>
-										</ListItemAvatar>
-									<ListItemText
-										primary={contact.title.$t}
-									/>
-									<ListItemSecondaryAction>
-										<IconButton onClick={() => this.handleOpenDialog(contact)}>
-											<AssignmentIcon />
-										</IconButton>
-									</ListItemSecondaryAction>
-								</ListItem>
+								<ExpansionPanel
+									key={contact.id.$t}
+									expanded={selectedContactId === contact.id.$t}
+									onChange={() => this.handleSelectContact(contact)}
+								>
+									<ExpansionPanelSummary
+										expandIcon={<ExpandMoreIcon />}
+										// onClick={() => this.handleSelectContact(contact)}
+									>
+										<Typography variant="headline">{contact.title.$t}</Typography>
+									</ExpansionPanelSummary>
+
+									<ExpansionPanelDetails style={{display: 'block'}}>
+										<Grid item xs={12}>
+											{this.state.selectedContact ? (
+													this.renderSelectedContactNotes()
+											) : null}
+										</Grid> <br/>
+										<Grid item xs={12}>
+											<TextField
+												autoFocus
+												multiline
+												margin="dense"
+												id="name"
+												label="New Note"														
+												type="text"
+												fullWidth
+												value={this.state.noteText}
+												onChange={e => this.setState({noteText: e.target.value})}
+											/>
+										</Grid><br/>
+										<Grid item xs={12}>
+											<Button onClick={this.handleNewNote} color="primary" variant="contained">
+												<AddNoteIcon className={this.props.classes.buttonIcon}/>						
+												Create Note					
+											</Button>
+										</Grid>
+									</ExpansionPanelDetails>
+								</ExpansionPanel>						
 							))}
 						</List>
-						{notesDialog}
 					</div>
-
 				</Grid>
+			</Grid>
     )
   }
 }

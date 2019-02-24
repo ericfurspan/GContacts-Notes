@@ -75,7 +75,7 @@ class App extends Component {
 
     // Google's OAuth 2.0 endpoint for requesting an access token
     const oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
-    const redirectUri = window.location.href;
+    const redirectUri = window.location.origin + '/';
     const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
     const scope = 'https://www.googleapis.com/auth/contacts.readonly';
 
@@ -117,6 +117,7 @@ class App extends Component {
     }
     return (
       <div className="App App-wrapper">
+      
         {this.state.contacts ? (
           <Contacts 
             data={this.state}
